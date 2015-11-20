@@ -102,6 +102,10 @@ No problem, create a json file in the exact same form as before:
 
 and invoke the `prepro.py` script to preprocess all the images and data into and hdf5 file. Then train the model with `train.lua` (see docs inside code).
 
+### License
+
+BSD License.
+
 ### Acknowledgements
 
 Parts of this code were written in collaboration with my labmate [Justin Johnson](http://cs.stanford.edu/people/jcjohns/). 
