@@ -1,9 +1,11 @@
 --[[
-Test the LanguageModel implementation
+Unit tests for the LanguageModel implementation, making sure
+that nothing crashes, that we can overfit a small dataset
+and that everything gradient checks.
 --]]
 
 require 'torch'
-require 'LanguageModel'
+require 'misc.LanguageModel'
 
 local gradcheck = require 'misc.gradcheck'
 
@@ -70,10 +72,6 @@ local function forwardApiTestFactory(dtype)
     local gradInput = lm:backward({imgs, seq}, gradOutput)
     tester:assertTensorSizeEq(gradInput[1], {opt.batch_size, opt.input_encoding_size})
     tester:asserteq(gradInput[2]:nElement(), 0, 'grad on seq should be empty tensor')
-
-    -- also double check that we can use scheduled sampling without errors
-    lm:setScheduledSamplingEpsilon(0) -- 0 ensures we definitely sample
-    local output = lm:forward{imgs, seq}
 
   end
   return f
