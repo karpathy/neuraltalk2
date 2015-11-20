@@ -7,6 +7,8 @@ This is an early code release that works great but is slightly hastily released 
 
 This current code (and the pretrained model) gets about 0.9 CIDEr, which would place it around spot #8 on the [codalab leaderboard](https://competitions.codalab.org/competitions/3221#results). I will submit the result soon.
 
+![teaser results](https://raw.github.com/karpathy/neuraltalk2/master/vis/teaser.jpeg)
+
 ### Requirements
 
 This code is written in Lua and requires [Torch](http://torch.ch/). If you're on Ubuntu, installing Torch in your home directory may look something like: 
