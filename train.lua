@@ -145,15 +145,6 @@ assert(cnn_params:nElement() == cnn_grad_params:nElement())
 -- the language model point to old memory
 protos.lm:shareClones()
 
--- if string.len(opt.start_from) > 0 then
---   -- replace params with params from a checkpoint
---   print('initializing weights from ' .. opt.start_from)
---   local loaded_checkpoint = torch.load(opt.start_from)
---   -- copy the weights over
---   params:copy(loaded_checkpoint.params:typeAs(params))
---   cnn_params:copy(loaded_checkpoint.cnn_params:typeAs(cnn_params))
--- end
-
 -- construct thin module clones that share parameters with the actual
 -- modules. These thin module will have no intermediates and will be used
 -- for checkpointing to write significantly smaller checkpoint files
