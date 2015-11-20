@@ -5,6 +5,8 @@ Recurrent Neural Network captions your images. Now much faster and better than t
 
 This is an early code release that works great but is slightly hastily released and probably requires some code reading of inline comments (which I tried to be quite good with in general). I will be improving it over time but wanted to push the code out there because I promised it to too many people.
 
+This current code (and the pretrained model) gets about 0.9 CIDEr, which would place it around spot #8 on the [codalab leaderboard](https://competitions.codalab.org/competitions/3221#results). I will submit the result soon.
+
 ### Requirements
 
 This code is written in Lua and requires [Torch](http://torch.ch/). If you're on Ubuntu, installing Torch in your home directory may look something like: 
