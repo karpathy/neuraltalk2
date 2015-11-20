@@ -32,6 +32,7 @@ cmd:option('-dump_images', 0, 'Dump images into vis/imgs folder? (1=yes,0=no)')
 cmd:option('-dump_json', 1, 'Dump json with predictions into vis folder? (1=yes,0=no)')
 cmd:option('-image_root', '', 'In case the image paths have to be preprended with a root path to an image folder')
 cmd:option('-batch_size', 0, 'if > 0 then overrule, otherwise load from checkpoint')
+cmd:option('-split', 'test', 'val|test|train')
 
 -- misc
 cmd:option('-backend', 'cudnn', 'nn|cudnn')
@@ -159,7 +160,7 @@ local function eval_split(split, evalopt)
   return loss_sum/loss_evals, predictions, lang_stats
 end
 
-local loss, split_predictions, lang_stats = eval_split('val', {num_images = opt.num_images})
+local loss, split_predictions, lang_stats = eval_split(opt.split, {num_images = opt.num_images})
 print('loss: ', loss)
 if lang_stats then
   print(lang_stats)
