@@ -178,7 +178,7 @@ function net_utils.language_eval(predictions, id)
   -- Not my favorite kind of thing, but here we go
   local out_struct = {val_predictions = predictions}
   utils.write_json('coco-caption/val' .. id .. '.json', out_struct) -- serialize to json (ew, so gross)
-  os.execute('./call_python_caption_eval.sh val' .. id .. '.json') -- i'm dying over here
+  os.execute('./misc/call_python_caption_eval.sh val' .. id .. '.json') -- i'm dying over here
   local result_struct = utils.read_json('coco-caption/val' .. id .. '.json_out.json') -- god forgive me
   return result_struct
 end
