@@ -4,7 +4,7 @@ Does not have an h5 dependency.
 Only used at test time.
 ]]--
 
-local utils = require 'utils'
+local utils = require 'misc.utils'
 require 'lfs'
 require 'image'
 

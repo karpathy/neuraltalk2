@@ -1,4 +1,4 @@
-local utils = require 'utils'
+local utils = require 'misc.utils'
 local net_utils = {}
 
 -- take a raw CNN from Caffe and perform surgery. Note: VGG-16 SPECIFIC!

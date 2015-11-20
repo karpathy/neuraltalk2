@@ -1,5 +1,5 @@
 require 'nn'
-local utils = require 'utils'
+local utils = require 'misc.utils'
 local LSTM = require 'misc.LSTM'
 
 -------------------------------------------------------------------------------

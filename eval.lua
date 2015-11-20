@@ -4,11 +4,11 @@ require 'nngraph'
 -- exotics
 require 'loadcaffe'
 -- local imports
-local utils = require 'utils'
-require 'DataLoader'
-require 'DataLoaderRaw'
-require 'LanguageModel'
-local net_utils = require 'net_utils'
+local utils = require 'misc.utils'
+require 'misc.DataLoader'
+require 'misc.DataLoaderRaw'
+require 'misc.LanguageModel'
+local net_utils = require 'misc.net_utils'
 require 'misc.optim_updates'
 
 -------------------------------------------------------------------------------
