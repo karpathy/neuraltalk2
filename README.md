@@ -1,11 +1,11 @@
 
 # NeuralTalk2
 
-Recurrent Neural Network captions your images. Now much faster and better than the original [NeuralTalk](https://github.com/karpathy/neuraltalk). This implementation is **batched, uses Torch and runs on a GPU**. This results in about ~200x increase in training speed. It turns out that this also translates to much better performance.
+Recurrent Neural Network captions your images. Now much faster and better than the original [NeuralTalk](https://github.com/karpathy/neuraltalk). Compared to the origianl NeuralTalk this implementation is **batched, uses Torch, runs on a GPU, and supports CNN finetuning**. All of these together result in about ~200x increase in training speed and in a much better performance.
 
 This is an early code release that works great but is slightly hastily released and probably requires some code reading of inline comments (which I tried to be quite good with in general). I will be improving it over time but wanted to push the code out there because I promised it to too many people.
 
-This current code (and the pretrained model) gets about 0.9 CIDEr, which would place it around spot #8 on the [codalab leaderboard](https://competitions.codalab.org/competitions/3221#results). I will submit the result soon.
+This current code (and the pretrained model) gets ~0.9 CIDEr, which would place it around spot #8 on the [codalab leaderboard](https://competitions.codalab.org/competitions/3221#results). I will submit the actual result soon.
 
 ![teaser results](https://raw.github.com/karpathy/neuraltalk2/master/vis/teaser.jpeg)
 
@@ -29,7 +29,7 @@ $ luarocks install nngraph
 $ luarocks install image 
 ```
 
-If you'd like to train on an NVIDIA GPU using CUDA (which you REALLY REALLY want to, since we're using a VGGNet), you'll of course need a GPU, and you will have to install the [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit). Then get the `cutorch` and `cunn` packages:
+If you'd like to train on an NVIDIA GPU using CUDA (which you really, really want to since we're using a VGGNet), you'll of course need a GPU, and you will have to install the [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit). Then get the `cutorch` and `cunn` packages:
 
 ```bash
 $ luarocks install cutorch
@@ -100,7 +100,7 @@ No problem, create a json file in the exact same form as before:
 [{ file_path: 'path/img.jpg', captions: ['a caption', ...] }, ...]
 ```
 
-and invoke the `prepro.py` script to preprocess all the images and data into and hdf5 file. Then train the model with `train.lua` (see docs inside code).
+and invoke the `prepro.py` script to preprocess all the images and data into and hdf5 file and json file. Then invoke `train.lua` (see detailed options inside code).
 
 ### License
 
@@ -110,4 +110,6 @@ BSD License.
 
 Parts of this code were written in collaboration with my labmate [Justin Johnson](http://cs.stanford.edu/people/jcjohns/). 
 
-We're very grateful for [NVIDIA](https://developer.nvidia.com/deep-learning)'s support in providing GPUs that made this work possible.
+I'm very grateful for [NVIDIA](https://developer.nvidia.com/deep-learning)'s support in providing GPUs that made this work possible.
+
+I'm also very grateful to the maintainers of Torch for maintaining a wonderful deep learning library.
