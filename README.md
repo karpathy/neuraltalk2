@@ -9,6 +9,8 @@ This current code (and the pretrained model) gets ~0.9 CIDEr, which would place 
 
 ![teaser results](https://raw.github.com/karpathy/neuraltalk2/master/vis/teaser.jpeg)
 
+You can find a few more example results on the [demo page](http://cs.stanford.edu/people/karpathy/neuraltalk2/demo.html). These results will improve a bit more once the last few bells and whistles are in place (e.g. beam search, ensembling, reranking).
+
 ### Requirements
 
 This code is written in Lua and requires [Torch](http://torch.ch/). If you're on Ubuntu, installing Torch in your home directory may look something like: 
@@ -35,6 +37,8 @@ If you'd like to train on an NVIDIA GPU using CUDA (which you really, really wan
 $ luarocks install cutorch
 $ luarocks install cunn
 ```
+
+We're also going to need the [cjson](http://www.kyne.com.au/~mark/software/lua-cjson-manual.html) library so that we can load/save json files. Look under their section 2.4 for easy luarocks install.
 
 If you'd like to train your models you will need [loadcaffe](https://github.com/szagoruyko/loadcaffe), since we are using the VGGNet.
 
@@ -101,6 +105,8 @@ No problem, create a json file in the exact same form as before:
 ```
 
 and invoke the `prepro.py` script to preprocess all the images and data into and hdf5 file and json file. Then invoke `train.lua` (see detailed options inside code).
+
+**A few notes on training.** When you're training you might want to proceed in stages. Notice that by default finetuning is disabled. When you train with no finetuning (I found Adam works best, by the way) your score will climb to ~0.7 CIDEr in ~day and then get stuck. At this point I like to stop the training, and rstart training but now with finetuning (i.e. `-finetune_cnn_after 0`), and using the flag `start_from` to continue from the previous checkpoint. You'll see your score rise up to about 0.9 CIDEr over ~2 days or so (on MS COCO).
 
 ### License
 
