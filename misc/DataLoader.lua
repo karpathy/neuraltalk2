@@ -112,7 +112,7 @@ function DataLoader:getBatch(opt)
     if ncap < seq_per_img then
       -- we need to subsample (with replacement)
       seq = torch.LongTensor(seq_per_img, self.seq_length)
-      for q=1,5 do
+      for q=1, seq_per_img do
         local ixl = torch.random(ix1,ix2)
         seq[{ {q,q} }] = self.h5_file:read('/labels'):partial({ixl, ixl}, {1,self.seq_length})
       end
