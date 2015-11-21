@@ -34,11 +34,12 @@ cmd:option('-input_encoding_size',512,'the encoding size of each token in the vo
 
 -- Optimization
 cmd:option('-optim','adam','what update to use? rmsprop|sgd|sgdmom|adagrad|adam')
-cmd:option('-learning_rate',2e-4,'learning rate for rmsprop')
+cmd:option('-learning_rate',4e-4,'learning rate')
 cmd:option('-learning_rate_decay_start', -1, 'at what iteration to start decaying learning rate? (-1 = dont)')
-cmd:option('-learning_rate_decay_every', 30000, 'every how many iterations thereafter to drop LR by half?')
+cmd:option('-learning_rate_decay_every', 50000, 'every how many iterations thereafter to drop LR by half?')
+cmd:option('-grad_clip',0.1,'clip gradients at this value (note should be lower than usual 5 because we normalize grads by both batch and seq_length)')
 cmd:option('-optim_alpha',0.8,'alpha for adagrad/rmsprop/momentum/adam')
-cmd:option('-optim_beta',0.995,'beta used for adam')
+cmd:option('-optim_beta',0.999,'beta used for adam')
 cmd:option('-optim_epsilon',1e-8,'epsilon that goes into denominator in rmsprop')
 cmd:option('-drop_prob_lm', 0.5, 'strength of dropout in the Language Model RNN')
 cmd:option('-batch_size',16,'what is the batch size in number of images per batch? (there will be x seq_per_img sentences)')
@@ -140,19 +141,23 @@ print('total number of parameters in LM: ', params:nElement())
 print('total number of parameters in CNN: ', cnn_params:nElement())
 assert(params:nElement() == grad_params:nElement())
 assert(cnn_params:nElement() == cnn_grad_params:nElement())
--- we have to ensure parameter sharing, especially after calling getParameters()
--- becayse that function reshuffles all the memory around and the LSTM clones inside 
--- the language model point to old memory
-protos.lm:shareClones()
 
 -- construct thin module clones that share parameters with the actual
 -- modules. These thin module will have no intermediates and will be used
 -- for checkpointing to write significantly smaller checkpoint files
-local thin_lm = protos.lm:clone('weight', 'bias', 'gradWeight', 'gradBias')
-local thin_cnn = protos.cnn:clone('weight', 'bias', 'gradWeight', 'gradBias')
+local thin_lm = protos.lm:clone()
+thin_lm.core:share(protos.lm.core, 'weight', 'bias') -- TODO: we are assuming that LM has specific members! figure out clean way to get rid of, not modular.
+thin_lm.lookup_table:share(protos.lm.lookup_table, 'weight', 'bias')
+local thin_cnn = protos.cnn:clone('weight', 'bias')
+-- sanitize all modules of gradient storage so that we dont save big checkpoints
 net_utils.sanitize_gradients(thin_cnn)
 local lm_modules = thin_lm:getModulesList()
 for k,v in pairs(lm_modules) do net_utils.sanitize_gradients(v) end
+
+-- create clones and ensure parameter sharing. we have to do this 
+-- all the way here at the end because calls such as :cuda() and
+-- :getParameters() reshuffle memory around.
+protos.lm:createClones()
 
 collectgarbage() -- "yeah, sure why not"
 -------------------------------------------------------------------------------
@@ -259,19 +264,21 @@ local function lossFun()
     local dx = protos.cnn:backward(data.images, dfeats)
   end
 
+  -- clip gradients
+  -- print(string.format('claming %f%% of gradients', 100*torch.mean(torch.gt(torch.abs(grad_params), opt.grad_clip))))
+  grad_params:clamp(-opt.grad_clip, opt.grad_clip)
+
   -- apply L2 regularization
   if opt.cnn_weight_decay > 0 then
     cnn_grad_params:add(opt.cnn_weight_decay, cnn_params)
     -- note: we don't bother adding the l2 loss to the total loss, meh.
+    cnn_grad_params:clamp(-opt.grad_clip, opt.grad_clip)
   end
   -----------------------------------------------------------------------------
 
   -- and lets get out!
-  local stats = {}
-  stats.dt = dt
-  local losses = {}
-  losses.total_loss = loss
-  return losses, stats
+  local losses = { total_loss = loss }
+  return losses
 end
 
 -------------------------------------------------------------------------------
@@ -287,7 +294,7 @@ local best_score
 while true do  
 
   -- eval loss/gradient
-  local losses, stats = lossFun()
+  local losses = lossFun()
   if iter % opt.losses_log_every == 0 then loss_history[iter] = losses.total_loss end
   print(string.format('iter %d: %f', iter, losses.total_loss))
 
@@ -328,7 +335,7 @@ while true do
     end
     if best_score == nil or current_score > best_score then
       best_score = current_score
-      if true then --if iter > 0 then -- dont save on very first iteration
+      if iter > 0 then -- dont save on very first iteration
         -- include the protos (which have weights) and save to file
         local save_protos = {}
         save_protos.lm = thin_lm -- these are shared clones, and point to correct param storage

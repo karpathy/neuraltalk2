@@ -9,7 +9,6 @@ require 'misc.DataLoader'
 require 'misc.DataLoaderRaw'
 require 'misc.LanguageModel'
 local net_utils = require 'misc.net_utils'
-require 'misc.optim_updates'
 
 -------------------------------------------------------------------------------
 -- Input arguments and options
@@ -88,6 +87,7 @@ end
 local protos = checkpoint.protos
 protos.expander = nn.FeatExpander(opt.seq_per_img)
 protos.crit = nn.LanguageModelCriterion()
+protos.lm:createClones() -- reconstruct clones inside the language model
 if opt.gpuid >= 0 then for k,v in pairs(protos) do v:cuda() end end
 
 -------------------------------------------------------------------------------
