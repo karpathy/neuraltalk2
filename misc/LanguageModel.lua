@@ -1,5 +1,6 @@
 require 'nn'
 local utils = require 'misc.utils'
+local net_utils = require 'misc.net_utils'
 local LSTM = require 'misc.LSTM'
 
 -------------------------------------------------------------------------------
@@ -49,17 +50,6 @@ function layer:createClones()
   for t=2,self.seq_length+2 do
     self.clones[t] = self.core:clone('weight', 'bias', 'gradWeight', 'gradBias')
     self.lookup_tables[t] = self.lookup_table:clone('weight', 'gradWeight')
-  end
-end
-function layer:shareClones()
-  if self.clones == nil then self:createClones(); return; end
-  -- point all clones to the core/lookuptable
-  print('resharing clones inside the LanguageModel')
-  self.clones[1] = self.core
-  self.lookup_tables[1] = self.lookup_table
-  for t=2,self.seq_length+2 do
-    self.clones[t]:share(self.core, 'weight', 'bias', 'gradWeight', 'gradBias')
-    self.lookup_tables[t]:share(self.lookup_table, 'weight', 'gradWeight')
   end
 end
 
