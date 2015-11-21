@@ -1,7 +1,7 @@
 
 # NeuralTalk2
 
-Recurrent Neural Network captions your images. Now much faster and better than the original [NeuralTalk](https://github.com/karpathy/neuraltalk). Compared to the origianl NeuralTalk this implementation is **batched, uses Torch, runs on a GPU, and supports CNN finetuning**. All of these together result in quite a large increase in training speed for the Language Model (~100x), but overall not as much because we also have to forward a VGGNet. However, overall very good models can be trained in 2-3 days, and show a much better performance.
+Recurrent Neural Network captions your images. Now much faster and better than the original [NeuralTalk](https://github.com/karpathy/neuraltalk). Compared to the original NeuralTalk this implementation is **batched, uses Torch, runs on a GPU, and supports CNN finetuning**. All of these together result in quite a large increase in training speed for the Language Model (~100x), but overall not as much because we also have to forward a VGGNet. However, overall very good models can be trained in 2-3 days, and show a much better performance.
 
 This is an early code release that works great but is slightly hastily released and probably requires some code reading of inline comments (which I tried to be quite good with in general). I will be improving it over time but wanted to push the code out there because I promised it to too many people.
 
@@ -38,6 +38,8 @@ $ luarocks install cutorch
 $ luarocks install cunn
 ```
 
+If you'd like to use the cudnn backend (the pretrained checkpoint does), you also have to install [cudnn](https://github.com/soumith/cudnn.torch) and its Torch bindings.
+
 We're also going to need the [cjson](http://www.kyne.com.au/~mark/software/lua-cjson-manual.html) library so that we can load/save json files. Look under their section 2.4 for easy luarocks install.
 
 If you'd like to train your models you will need [loadcaffe](https://github.com/szagoruyko/loadcaffe), since we are using the VGGNet.
@@ -47,6 +49,8 @@ luarocks install loadcaffe
 ```
 
 Lastly, if you want to train you will also need to install [torch-hdf5](https://github.com/deepmind/torch-hdf5), and [h5py](http://www.h5py.org/), since we will be using hdf5 files to store the preprocessed data.
+
+Phew! Quite a few dependencies, sorry no easy way around it :\
 
 ### I just want to caption images
 
@@ -69,6 +73,10 @@ $ python -m SimpleHTTPServer
 Now visit `localhost:4000` in your browser and you should see your predicted captions.
 
 You can see an [example visualization demo page here](http://cs.stanford.edu/people/karpathy/neuraltalk2/demo.html).
+
+#### I only have CPU
+
+Okay, in that case you can download the [cpu model checkpoint](http://cs.stanford.edu/people/karpathy/neuraltalk2/checkpoint_v1_cpu.zip), which does not require the GPU. Make sure you run the eval script with `-gpuid -1` to tell the script to run on CPU. On my machine it takes a bit less than 1 second per image to caption in CPU mode.
 
 ### I'd like to train my own network on MS COCO
 
@@ -107,6 +115,16 @@ No problem, create a json file in the exact same form as before:
 and invoke the `prepro.py` script to preprocess all the images and data into and hdf5 file and json file. Then invoke `train.lua` (see detailed options inside code).
 
 **A few notes on training.** When you're training you might want to proceed in stages. Notice that by default finetuning is disabled. When you train with no finetuning (I found Adam works best, by the way) your score will climb to ~0.7 CIDEr in ~day and then get stuck. At this point I like to stop the training, and rstart training but now with finetuning (i.e. `-finetune_cnn_after 0`), and using the flag `start_from` to continue from the previous checkpoint. You'll see your score rise up to about 0.9 CIDEr over ~2 days or so (on MS COCO).
+
+### I'd like to distribute my GPU trained checkpoints for CPU
+
+Use the script `convert_checkpoint_gpu_to_cpu.lua` to convert your GPU checkpoints to be usable on CPU. See inline documentation for why this separate script is needed. For example:
+
+```bash
+th convert_checkpoint_gpu_to_cpu.lua gpu_checkpoint.t7
+```
+
+write the file `gpu_checkpoint.t7_cpu.t7`, which you can now run with `-gpuid -1` in the eval script.
 
 ### License
 
