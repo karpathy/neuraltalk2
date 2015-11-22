@@ -22,6 +22,7 @@ cmd:text('Options')
 cmd:option('-model','','path to model to evaluate')
 cmd:option('-input_h5','','path to the h5file containing the preprocessed dataset. empty = fetch from model checkpoint.')
 cmd:option('-input_json','','path to the json file containing additional info and vocab. empty = fetch from model checkpoint.')
+cmd:option('-batch_size', 0, 'if > 0 then overrule, otherwise load from checkpoint. If you crash with out of memory, set this to 1.')
 
 cmd:option('-image_folder', '', 'If this is nonempty then will predict on the images in this folder path')
 cmd:option('-coco_json', '', 'if nonempty then use this file in DataLoaderRaw (see docs there). Used in COCO test evaluation.')
@@ -30,7 +31,6 @@ cmd:option('-language_eval', 0, 'Evaluate language as well (1 = yes, 0 = no)? BL
 cmd:option('-dump_images', 0, 'Dump images into vis/imgs folder? (1=yes,0=no)')
 cmd:option('-dump_json', 1, 'Dump json with predictions into vis folder? (1=yes,0=no)')
 cmd:option('-image_root', '', 'In case the image paths have to be preprended with a root path to an image folder')
-cmd:option('-batch_size', 0, 'if > 0 then overrule, otherwise load from checkpoint')
 cmd:option('-split', 'test', 'val|test|train')
 
 -- misc
