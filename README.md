@@ -104,6 +104,8 @@ The train script will take over, and start dumping checkpoints into the folder s
 
 If you'd like to evaluate BLEU/METEOR/CIDEr scores during training, turn on `language_eval` option, but don't forget to download the [cococaption code](https://github.com/tylin/coco-caption) into `coco-caption` directory.
 
+*Warning*: the prepro script will fail with the default MSCOCO data because one of their images is corrupted. See [this issue](https://github.com/karpathy/neuraltalk2/issues/4) for the fix.
+
 ### I'd like to train on my own data
 
 No problem, create a json file in the exact same form as before:
