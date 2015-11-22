@@ -60,10 +60,10 @@ The pretrained checkpoint can be downloaded here: [pretrained checkpoint link](h
 the eval script:
 
 ```bash
-$ th eval.lua -model /path/to/model -image_folder /path/to/image/directory
+$ th eval.lua -model /path/to/model -image_folder /path/to/image/directory -num_images 10 
 ```
 
-The eval script will create an `vis.json` file inside the `vis` folder, which can then be visualized with the provided HTML interface:
+This tells the `eval` script to run up to 10 images from the given folder. If you have a big GPU you can speed up the evaluation by increasing `batch_size` (default = 1). Use `-num_images -1` to process all images. The eval script will create an `vis.json` file inside the `vis` folder, which can then be visualized with the provided HTML interface:
 
 ```bash
 $ cd vis
@@ -75,6 +75,8 @@ Now visit `localhost:4000` in your browser and you should see your predicted cap
 You can see an [example visualization demo page here](http://cs.stanford.edu/people/karpathy/neuraltalk2/demo.html).
 
 **"I only have CPU"**. Okay, in that case download the [cpu model checkpoint](http://cs.stanford.edu/people/karpathy/neuraltalk2/checkpoint_v1_cpu.zip). Make sure you run the eval script with `-gpuid -1` to tell the script to run on CPU. On my machine it takes a bit less than 1 second per image to caption in CPU mode.
+
+**Running on MSCOCO images**. If you train on MSCOCO (see how below), you will have generated preprocessed MSCOCO images, which you can use directly in the eval script. In this case simply leave out the `image_folder` option and the eval script and instead pass in the `input_h5`, `input_json` to your preprocessed files. This will make more sense once you read the section below :)
 
 ### I'd like to train my own network on MS COCO
 

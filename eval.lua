@@ -19,26 +19,27 @@ cmd:text('Train an Image Captioning model')
 cmd:text()
 cmd:text('Options')
 
+-- Input paths
 cmd:option('-model','','path to model to evaluate')
-cmd:option('-input_h5','','path to the h5file containing the preprocessed dataset. empty = fetch from model checkpoint.')
-cmd:option('-input_json','','path to the json file containing additional info and vocab. empty = fetch from model checkpoint.')
-cmd:option('-batch_size', 0, 'if > 0 then overrule, otherwise load from checkpoint. If you crash with out of memory, set this to 1.')
-
-cmd:option('-image_folder', '', 'If this is nonempty then will predict on the images in this folder path')
-cmd:option('-coco_json', '', 'if nonempty then use this file in DataLoaderRaw (see docs there). Used in COCO test evaluation.')
+-- Basic options
+cmd:option('-batch_size', 1, 'if > 0 then overrule, otherwise load from checkpoint.')
 cmd:option('-num_images', 100, 'how many images to use when periodically evaluating the loss? (-1 = all)')
 cmd:option('-language_eval', 0, 'Evaluate language as well (1 = yes, 0 = no)? BLEU/CIDEr/METEOR/ROUGE_L? requires coco-caption code from Github.')
-cmd:option('-dump_images', 0, 'Dump images into vis/imgs folder? (1=yes,0=no)')
+cmd:option('-dump_images', 1, 'Dump images into vis/imgs folder for vis? (1=yes,0=no)')
 cmd:option('-dump_json', 1, 'Dump json with predictions into vis folder? (1=yes,0=no)')
+-- For evaluation on a folder of images:
+cmd:option('-image_folder', '', 'If this is nonempty then will predict on the images in this folder path')
 cmd:option('-image_root', '', 'In case the image paths have to be preprended with a root path to an image folder')
-cmd:option('-split', 'test', 'val|test|train')
-
+-- For evaluation on MSCOCO images from some split:
+cmd:option('-input_h5','','path to the h5file containing the preprocessed dataset. empty = fetch from model checkpoint.')
+cmd:option('-input_json','','path to the json file containing additional info and vocab. empty = fetch from model checkpoint.')
+cmd:option('-split', 'test', 'if running on MSCOCO images, which split to use: val|test|train')
+cmd:option('-coco_json', '', 'if nonempty then use this file in DataLoaderRaw (see docs there). Used only in MSCOCO test evaluation, where we have a specific json file of only test set images.')
 -- misc
 cmd:option('-backend', 'cudnn', 'nn|cudnn')
 cmd:option('-id', 'evalscript', 'an id identifying this run/job. used only if language_eval = 1 for appending to intermediate files')
 cmd:option('-seed', 123, 'random number generator seed to use')
 cmd:option('-gpuid', 0, 'which gpu to use. -1 = use CPU')
-
 cmd:text()
 
 -------------------------------------------------------------------------------
@@ -149,7 +150,7 @@ local function eval_split(split, evalopt)
     end
 
     if data.bounds.wrapped then break end -- the split ran out of data, lets break out
-    if n >= num_images then break end -- we've used enough images
+    if num_images >= 0 and n >= num_images then break end -- we've used enough images
   end
 
   local lang_stats
