@@ -133,7 +133,7 @@ local function eval_split(split, evalopt)
       table.insert(predictions, entry)
       if opt.dump_images == 1 then
         -- dump the raw image to vis/ folder
-        local cmd = 'cp ' .. path.join(opt.image_root, data.infos[k].file_path) .. ' vis/imgs/img' .. #predictions .. '.jpg' -- bit gross
+        local cmd = 'cp "' .. path.join(opt.image_root, data.infos[k].file_path) .. '" vis/imgs/img' .. #predictions .. '.jpg' -- bit gross
         print(cmd)
         os.execute(cmd) -- dont think there is cleaner way in Lua
       end
