@@ -33,6 +33,11 @@ cmd:option('-image_root', '', 'In case the image paths have to be preprended wit
 cmd:option('-batch_size', 0, 'if > 0 then overrule, otherwise load from checkpoint')
 cmd:option('-split', 'test', 'val|test|train')
 
+-- sampling options
+cmd:option('-sample_max', 1, '1 = sample argmax words. 0 = sample from distributions.')
+cmd:option('-beam_size', 1, 'used when sample_max = 1, indicates number of beams in beam search.')
+cmd:option('-temperature', 1.0, 'temperature when sampling from distributions (i.e. when sample_max = 0). Lower = "safer" predictions.')
+
 -- misc
 cmd:option('-backend', 'cudnn', 'nn|cudnn')
 cmd:option('-id', 'evalscript', 'an id identifying this run/job. used only if language_eval = 1 for appending to intermediate files')
@@ -125,7 +130,8 @@ local function eval_split(split, evalopt)
     end
 
     -- forward the model to also get generated samples for each image
-    local seq = protos.lm:sample(feats)
+    local sample_opts = { sample_max = opt.sample_max, beam_size = opt.beam_size, temperature = opt.temperature }
+    local seq = protos.lm:sample(feats, sample_opts)
     local sents = net_utils.decode_sequence(vocab, seq)
     for k=1,#sents do
       local entry = {image_id = data.infos[k].id, caption = sents[k]}
@@ -149,7 +155,7 @@ local function eval_split(split, evalopt)
     end
 
     if data.bounds.wrapped then break end -- the split ran out of data, lets break out
-    if n >= num_images then break end -- we've used enough images
+    if num_images >= 0 and n >= num_images then break end -- we've used enough images
   end
 
   local lang_stats

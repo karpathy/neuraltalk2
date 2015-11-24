@@ -46,8 +46,8 @@ cmd:option('-batch_size',16,'what is the batch size in number of images per batc
 cmd:option('-max_iters', -1, 'max number of iterations to run for (-1 = run forever)')
 cmd:option('-cnn_optim','adam','optimization to use for CNN')
 cmd:option('-cnn_optim_alpha',0.8,'alpha for momentum of CNN')
-cmd:option('-cnn_optim_beta',0.995,'alpha for momentum of CNN')
-cmd:option('-cnn_learning_rate',5e-5,'learning rate for the CNN')
+cmd:option('-cnn_optim_beta',0.999,'alpha for momentum of CNN')
+cmd:option('-cnn_learning_rate',1e-5,'learning rate for the CNN')
 cmd:option('-cnn_weight_decay', 0, 'L2 weight decay just for the CNN')
 cmd:option('-finetune_cnn_after', -1, 'After what iteration do we start finetuning the CNN? (-1 = disable; never finetune, 0 = finetune from start)')
 

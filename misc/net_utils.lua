@@ -171,6 +171,15 @@ function net_utils.decode_sequence(ix_to_word, seq)
   return out
 end
 
+function net_utils.clone_list(lst)
+  -- takes list of tensors, clone all
+  local new = {}
+  for k,v in pairs(lst) do
+    new[k] = v:clone()
+  end
+  return new
+end
+
 -- hiding this piece of code on the bottom of the file, in hopes that
 -- noone will ever find it. Lets just pretend it doesn't exist
 function net_utils.language_eval(predictions, id)

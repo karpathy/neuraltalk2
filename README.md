@@ -74,6 +74,8 @@ Now visit `localhost:4000` in your browser and you should see your predicted cap
 
 You can see an [example visualization demo page here](http://cs.stanford.edu/people/karpathy/neuraltalk2/demo.html).
 
+**Beam Search**. To improve the captioning performance you want to also use the flag `-beam_size`. E.g. `-beam_size 5` uses 5 beams to perform a more exhaustive search of argmax sequences for each image, resulting in better performance. However, beam search is more computationally expensive so the predictions will take a bit more time to compute.
+
 #### I only have CPU
 
 Okay, in that case you can download the [cpu model checkpoint](http://cs.stanford.edu/people/karpathy/neuraltalk2/checkpoint_v1_cpu.zip), which does not require the GPU. Make sure you run the eval script with `-gpuid -1` to tell the script to run on CPU. On my machine it takes a bit less than 1 second per image to caption in CPU mode.

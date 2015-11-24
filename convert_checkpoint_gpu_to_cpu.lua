@@ -84,7 +84,7 @@ for k,v in pairs(protos) do
     protos[k] = cpu_cnn
   elseif k == 'lm' then
     local debugger = require('fb.debugger'); debugger:enter()
-    v.clones = nil -- sanitize the clones inside the language model
+    v.clones = nil -- sanitize the clones inside the language model (if present just in case. but they shouldnt be)
     v.lookup_tables = nil
     protos[k]:float() -- ship to CPU
   else

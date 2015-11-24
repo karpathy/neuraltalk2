@@ -254,6 +254,60 @@ local function sample()
   print(seq)
 end
 
+
+-- check that we can call :sample_beam() and that correct-looking things happen
+-- these are not very exhaustive tests and basic sanity checks
+local function sample_beam()
+  local dtype = 'torch.DoubleTensor'
+  torch.manualSeed(1)
+
+  local opt = {}
+  opt.vocab_size = 10
+  opt.input_encoding_size = 4
+  opt.rnn_size = 8
+  opt.num_layers = 1
+  opt.dropout = 0
+  opt.seq_length = 7
+  opt.batch_size = 6
+  local lm = nn.LanguageModel(opt)
+
+  local imgs = torch.randn(opt.batch_size, opt.input_encoding_size):type(dtype)
+
+  local seq_vanilla, logprobs_vanilla = lm:sample(imgs)
+  local seq, logprobs = lm:sample(imgs, {beam_size = 1})
+
+  -- check some basic I/O, types, etc.
+  tester:assertTensorSizeEq(seq, {opt.seq_length, opt.batch_size})
+  tester:asserteq(seq:type(), 'torch.LongTensor')
+  tester:assertge(torch.min(seq), 0)
+  tester:assertle(torch.max(seq), opt.vocab_size+1)
+
+  -- doing beam search with beam size 1 should return exactly what we had before
+  print('')
+  print('vanilla sampling:')
+  print(seq_vanilla)
+  print('beam search sampling with beam size 1:')
+  print(seq)
+  tester:assertTensorEq(seq_vanilla, seq, 0) -- these are LongTensors, expect exact match
+  tester:assertTensorEq(logprobs_vanilla, logprobs, 1e-6) -- logprobs too
+
+  -- doing beam search with higher beam size should yield higher likelihood sequences
+  local seq2, logprobs2 = lm:sample(imgs, {beam_size = 8})
+  local logsum = torch.sum(logprobs, 1)
+  local logsum2 = torch.sum(logprobs2, 1)
+  print('')
+  print('beam search sampling with beam size 1:')
+  print(seq)
+  print('beam search sampling with beam size 8:')
+  print(seq2)
+  print('logprobs:')
+  print(logsum)
+  print(logsum2)
+
+  -- the logprobs should always be >=, since beam_search is better argmax inference
+  tester:assert(torch.all(torch.gt(logsum2, logsum)))
+end
+
 tests.doubleApiForwardTest = forwardApiTestFactory('torch.DoubleTensor')
 tests.floatApiForwardTest = forwardApiTestFactory('torch.FloatTensor')
 tests.cudaApiForwardTest = forwardApiTestFactory('torch.CudaTensor')
@@ -261,6 +315,7 @@ tests.gradCheck = gradCheck
 tests.gradCheckLM = gradCheckLM
 tests.overfit = overfit
 tests.sample = sample
+tests.sample_beam = sample_beam
 
 tester:add(tests)
 tester:run()
