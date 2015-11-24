@@ -1,7 +1,7 @@
 
 # NeuralTalk2
 
-Recurrent Neural Network captions your images. Now much faster and better than the original [NeuralTalk](https://github.com/karpathy/neuraltalk). Compared to the original NeuralTalk this implementation is **batched, uses Torch, runs on a GPU, and supports CNN finetuning**. All of these together result in quite a large increase in training speed for the Language Model (~100x), but overall not as much because we also have to forward a VGGNet. However, overall very good models can be trained in 2-3 days, and show a much better performance.
+Recurrent Neural Network captions your images. Now much faster and better than the original [NeuralTalk](https://github.com/karpathy/neuraltalk). Compared to the original NeuralTalk this implementation is **batched, uses Torch, runs on a GPU, and supports CNN finetuning**. All of these together result in quite a large increase in training speed for the Language Model (~100x), but overall not as much because we also have to forward a VGGNet. However, overall very good models can be trained in 2-3 days, and they show a much better performance.
 
 This is an early code release that works great but is slightly hastily released and probably requires some code reading of inline comments (which I tried to be quite good with in general). I will be improving it over time but wanted to push the code out there because I promised it to too many people.
 
@@ -10,6 +10,8 @@ This current code (and the pretrained model) gets ~0.9 CIDEr, which would place 
 ![teaser results](https://raw.github.com/karpathy/neuraltalk2/master/vis/teaser.jpeg)
 
 You can find a few more example results on the [demo page](http://cs.stanford.edu/people/karpathy/neuraltalk2/demo.html). These results will improve a bit more once the last few bells and whistles are in place (e.g. beam search, ensembling, reranking).
+
+There's also a [fun video](https://vimeo.com/146492001) by [@kcimc](https://twitter.com/kcimc), where he runs a neuraltalk2 pretrained model in real time on his laptop during a walk in Amsterdam.
 
 ### Requirements
 
@@ -60,10 +62,10 @@ The pretrained checkpoint can be downloaded here: [pretrained checkpoint link](h
 the eval script:
 
 ```bash
-$ th eval.lua -model /path/to/model -image_folder /path/to/image/directory
+$ th eval.lua -model /path/to/model -image_folder /path/to/image/directory -num_images 10 
 ```
 
-The eval script will create an `vis.json` file inside the `vis` folder, which can then be visualized with the provided HTML interface:
+This tells the `eval` script to run up to 10 images from the given folder. If you have a big GPU you can speed up the evaluation by increasing `batch_size` (default = 1). Use `-num_images -1` to process all images. The eval script will create an `vis.json` file inside the `vis` folder, which can then be visualized with the provided HTML interface:
 
 ```bash
 $ cd vis
@@ -74,11 +76,11 @@ Now visit `localhost:4000` in your browser and you should see your predicted cap
 
 You can see an [example visualization demo page here](http://cs.stanford.edu/people/karpathy/neuraltalk2/demo.html).
 
+**"I only have CPU"**. Okay, in that case download the [cpu model checkpoint](http://cs.stanford.edu/people/karpathy/neuraltalk2/checkpoint_v1_cpu.zip). Make sure you run the eval script with `-gpuid -1` to tell the script to run on CPU. On my machine it takes a bit less than 1 second per image to caption in CPU mode.
+
 **Beam Search**. To improve the captioning performance you want to also use the flag `-beam_size`. E.g. `-beam_size 5` uses 5 beams to perform a more exhaustive search of argmax sequences for each image, resulting in better performance. However, beam search is more computationally expensive so the predictions will take a bit more time to compute.
 
-#### I only have CPU
-
-Okay, in that case you can download the [cpu model checkpoint](http://cs.stanford.edu/people/karpathy/neuraltalk2/checkpoint_v1_cpu.zip), which does not require the GPU. Make sure you run the eval script with `-gpuid -1` to tell the script to run on CPU. On my machine it takes a bit less than 1 second per image to caption in CPU mode.
+**Running on MSCOCO images**. If you train on MSCOCO (see how below), you will have generated preprocessed MSCOCO images, which you can use directly in the eval script. In this case simply leave out the `image_folder` option and the eval script and instead pass in the `input_h5`, `input_json` to your preprocessed files. This will make more sense once you read the section below :)
 
 ### I'd like to train my own network on MS COCO
 
@@ -94,9 +96,11 @@ Once we have this, we're ready to invoke the `prepro.py` script, which will read
 $ python prepro.py --input_json coco/coco_raw.json --num_val 5000 --num_test 5000 --images_root coco/images --word_count_threshold 5 --output_json coco/cocotalk.json --output_h5 coco/cocotalk.h5
 ```
 
-This is telling the script to read in all the data (the images and the captions), allocate 5000 images for val/test splits respectively, and map all words that occur <= 5 times to a special `UNK` token. The resulting `json` and `h5` files are about 30GB and contain everything we want to know about the dataset. The last thing we need is the [VGG-16 caffe checkpoint](http://www.robots.ox.ac.uk/~vgg/research/very_deep/), (under Models section, "16-layer model" bullet point).
+This is telling the script to read in all the data (the images and the captions), allocate 5000 images for val/test splits respectively, and map all words that occur <= 5 times to a special `UNK` token. The resulting `json` and `h5` files are about 30GB and contain everything we want to know about the dataset.
 
-We're now ready to train!
+**Warning**: the prepro script will fail with the default MSCOCO data because one of their images is corrupted. See [this issue](https://github.com/karpathy/neuraltalk2/issues/4) for the fix, it involves manually replacing one image in the dataset.
+
+The last thing we need is the [VGG-16 Caffe checkpoint](http://www.robots.ox.ac.uk/~vgg/research/very_deep/), (under Models section, "16-layer model" bullet point). Put the two files (the prototxt configuration file and the proto binary of weights) somewhere (e.g. a `model` directory), and we're ready to train!
 
 ```bash
 $ th train.lua -input_h5 coco/cocotalk.h5 -input_json coco/cocotalk.json
@@ -104,9 +108,9 @@ $ th train.lua -input_h5 coco/cocotalk.h5 -input_json coco/cocotalk.json
 
 The train script will take over, and start dumping checkpoints into the folder specified by `checkpoint_path` (default = current folder). You also have to point the train script to the VGGNet protos (see the options inside `train.lua`).
 
-If you'd like to evaluate BLEU/METEOR/CIDEr scores during training, turn on `language_eval` option, but don't forget to download the [cococaption code](https://github.com/tylin/coco-caption) into `coco-caption` directory.
+If you'd like to evaluate BLEU/METEOR/CIDEr scores during training in addition to validation cross entropy loss, use `-language_eval 1` option, but don't forget to download the [coco-caption code](https://github.com/tylin/coco-caption) into `coco-caption` directory.
 
-*Warning*: the prepro script will fail with the default MSCOCO data because one of their images is corrupted. See [this issue](https://github.com/karpathy/neuraltalk2/issues/4) for the fix.
+**A few notes on training.** To give you an idea, with the default settings one epoch of MS COCO images is about 7500 iterations. 1 epoch of training (with no finetuning - notice this is the default) takes about 1 hour and results in validation loss ~2.7 and CIDEr score of ~0.4. By iteration 70,000 CIDEr climbs up to about 0.6 (validation loss at about 2.5) and then will top out at a bit below 0.7 CIDEr. After that additional improvements are only possible by turning on CNN finetuning. I like to do the training in stages, where I first train with no finetuning, and then restart the train script with `-finetune_cnn_after 0` to start finetuning right away, and using `-start_from` flag to continue from the previous model checkpoint. You'll see your score rise up to about 0.9 CIDEr over ~2 days or so (on MS COCO).
 
 ### I'd like to train on my own data
 
@@ -117,8 +121,6 @@ No problem, create a json file in the exact same form as before:
 ```
 
 and invoke the `prepro.py` script to preprocess all the images and data into and hdf5 file and json file. Then invoke `train.lua` (see detailed options inside code).
-
-**A few notes on training.** When you're training you might want to proceed in stages. Notice that by default finetuning is disabled. When you train with no finetuning (I found Adam works best, by the way) your score will climb to ~0.7 CIDEr in ~day and then get stuck. At this point I like to stop the training, and rstart training but now with finetuning (i.e. `-finetune_cnn_after 0`), and using the flag `start_from` to continue from the previous checkpoint. You'll see your score rise up to about 0.9 CIDEr over ~2 days or so (on MS COCO).
 
 ### I'd like to distribute my GPU trained checkpoints for CPU
 

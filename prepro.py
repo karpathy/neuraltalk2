@@ -183,7 +183,11 @@ def main(params):
   for i,img in enumerate(imgs):
     # load the image
     I = imread(os.path.join(params['images_root'], img['file_path']))
-    Ir = imresize(I, (256,256))
+    try:
+        Ir = imresize(I, (256,256))
+    except:
+        print 'failed resizing image %s - see http://git.io/vBIE0' % (img['file_path'],)
+        raise
     # handle grayscale input images
     if len(Ir.shape) == 2:
       Ir = Ir[:,:,np.newaxis]
