@@ -30,14 +30,22 @@ function DataLoaderRaw:__init(opt)
   else
     -- read in all the filenames from the folder
     print('listing all images in directory ' .. opt.folder_path)
-    local n = 1
-    for file in lfs.dir(opt.folder_path) do
-      local fullpath = path.join(opt.folder_path, file)
-      if lfs.attributes(fullpath,"mode") == "file" then
-        table.insert(self.files, fullpath)
-        table.insert(self.ids, tostring(n)) -- just order them sequentially
-        n=n+1
+    local function isImage(f)
+      local supportedExt = {'.jpg','.JPEG','.JPG','.png','.PNG','.ppm','.PPM'}
+      for _,ext in pairs(supportedExt) do
+        local _, end_idx =  f:find(ext)
+        if end_idx and end_idx == f:len() then
+          return true
+        end
       end
+      return false
+    end
+    local n = 1
+    for file in paths.files(opt.folder_path, isImage) do
+      local fullpath = path.join(opt.folder_path, file)
+      table.insert(self.files, fullpath)
+      table.insert(self.ids, tostring(n)) -- just order them sequentially
+      n=n+1
     end
   end
 
