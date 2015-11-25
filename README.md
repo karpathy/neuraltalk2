@@ -78,7 +78,7 @@ You can see an [example visualization demo page here](http://cs.stanford.edu/peo
 
 **"I only have CPU"**. Okay, in that case download the [cpu model checkpoint](http://cs.stanford.edu/people/karpathy/neuraltalk2/checkpoint_v1_cpu.zip). Make sure you run the eval script with `-gpuid -1` to tell the script to run on CPU. On my machine it takes a bit less than 1 second per image to caption in CPU mode.
 
-**Beam Search**. To improve the captioning performance you want to also use the flag `-beam_size`. E.g. `-beam_size 5` uses 5 beams to perform a more exhaustive search of argmax sequences for each image, resulting in better performance. However, beam search is more computationally expensive so the predictions will take a bit more time to compute.
+**Beam Search**. To improve the captioning performance you want to also use the flag `-beam_size`. E.g. `-beam_size 3` uses 3 beams to perform a more exhaustive search of argmax sequences for each image, resulting in better performance. However, beam search is more computationally expensive so the predictions will take a bit more time to compute. Note: higher is not always better. In my experiments 2 or 3 work well.
 
 **Running on MSCOCO images**. If you train on MSCOCO (see how below), you will have generated preprocessed MSCOCO images, which you can use directly in the eval script. In this case simply leave out the `image_folder` option and the eval script and instead pass in the `input_h5`, `input_json` to your preprocessed files. This will make more sense once you read the section below :)
 
