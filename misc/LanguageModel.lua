@@ -272,12 +272,6 @@ function layer:sample_beam(imgs, opt)
     table.sort(done_beams, compare)
     seq[{ {}, k }] = done_beams[1].seq -- the first beam has highest cumulative score
     seqLogprobs[{ {}, k }] = done_beams[1].logps
-
-    --local debugger = require('fb.debugger'); debugger:enter()
-
-    -- record the best beam for this image
-    --seq[{ {}, k }] = beam_seq[{ {}, 1 }] -- the first beam has highest cumulative score
-    --seqLogprobs[{ {}, k }] = beam_seq_logprobs[{ {}, 1 }]
   end
 
   -- return the samples and their log likelihoods
