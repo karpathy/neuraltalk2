@@ -15,6 +15,9 @@ There's also a [fun video](https://vimeo.com/146492001) by [@kcimc](https://twit
 
 ### Requirements
 
+
+#### For evaluation only
+
 This code is written in Lua and requires [Torch](http://torch.ch/). If you're on Ubuntu, installing Torch in your home directory may look something like: 
 
 ```bash
@@ -33,7 +36,9 @@ $ luarocks install nngraph
 $ luarocks install image 
 ```
 
-If you'd like to train on an NVIDIA GPU using CUDA (which you really, really want to since we're using a VGGNet), you'll of course need a GPU, and you will have to install the [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit). Then get the `cutorch` and `cunn` packages:
+We're also going to need the [cjson](http://www.kyne.com.au/~mark/software/lua-cjson-manual.html) library so that we can load/save json files. Look under their section 2.4 for easy luarocks install.
+
+If you'd like to run on an NVIDIA GPU using CUDA (which you really, really want to if you're training a model, since we're using a VGGNet), you'll of course need a GPU, and you will have to install the [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit). Then get the `cutorch` and `cunn` packages:
 
 ```bash
 $ luarocks install cutorch
@@ -42,7 +47,7 @@ $ luarocks install cunn
 
 If you'd like to use the cudnn backend (the pretrained checkpoint does), you also have to install [cudnn](https://github.com/soumith/cudnn.torch) and its Torch bindings.
 
-We're also going to need the [cjson](http://www.kyne.com.au/~mark/software/lua-cjson-manual.html) library so that we can load/save json files. Look under their section 2.4 for easy luarocks install.
+#### For training
 
 If you'd like to train your models you will need [loadcaffe](https://github.com/szagoruyko/loadcaffe), since we are using the VGGNet.
 
@@ -50,7 +55,7 @@ If you'd like to train your models you will need [loadcaffe](https://github.com/
 luarocks install loadcaffe
 ```
 
-Lastly, if you want to train you will also need to install [torch-hdf5](https://github.com/deepmind/torch-hdf5), and [h5py](http://www.h5py.org/), since we will be using hdf5 files to store the preprocessed data.
+You will also need to install [torch-hdf5](https://github.com/deepmind/torch-hdf5), and [h5py](http://www.h5py.org/), since we will be using hdf5 files to store the preprocessed data.
 
 Phew! Quite a few dependencies, sorry no easy way around it :\
 
@@ -78,9 +83,7 @@ You can see an [example visualization demo page here](http://cs.stanford.edu/peo
 
 **"I only have CPU"**. Okay, in that case download the [cpu model checkpoint](http://cs.stanford.edu/people/karpathy/neuraltalk2/checkpoint_v1_cpu.zip). Make sure you run the eval script with `-gpuid -1` to tell the script to run on CPU. On my machine it takes a bit less than 1 second per image to caption in CPU mode.
 
-**Beam Search**. Beam search is enabled by default because it increaes the performance of the search for argmax decoding sequence. However, this is a little more expensive, so if you'd like to evaluate images faster, but at a cost of performance, use `-beam_size 1`. For example, in one of my experiments beam size 2 gives CIDEr 0.922, and beam size 1 gives CIDEr 0.886.
-
-To improve the captioning performance you want to also use the flag `-beam_size`. E.g. `-beam_size 3` uses 3 beams to perform a more exhaustive search of argmax sequences for each image, resulting in better performance. However, beam search is more computationally expensive so the predictions will take a bit more time to compute. Note: higher is not always better. In my experiments 2 or 3 work well.
+**Beam Search**. Beam search is enabled by default because it increases the performance of the search for argmax decoding sequence. However, this is a little more expensive, so if you'd like to evaluate images faster, but at a cost of performance, use `-beam_size 1`. For example, in one of my experiments beam size 2 gives CIDEr 0.922, and beam size 1 gives CIDEr 0.886.
 
 **Running on MSCOCO images**. If you train on MSCOCO (see how below), you will have generated preprocessed MSCOCO images, which you can use directly in the eval script. In this case simply leave out the `image_folder` option and the eval script and instead pass in the `input_h5`, `input_json` to your preprocessed files. This will make more sense once you read the section below :)
 
