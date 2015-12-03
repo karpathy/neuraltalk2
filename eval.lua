@@ -10,8 +10,7 @@ require 'misc.DataLoaderRaw'
 require 'misc.CameraLoader'
 require 'misc.LanguageModel'
 local net_utils = require 'misc.net_utils'
-require 'camera'
-require 'image'
+
 
 -------------------------------------------------------------------------------
 -- Input arguments and options
@@ -49,6 +48,7 @@ cmd:option('-id', 'evalscript', 'an id identifying this run/job. used only if la
 cmd:option('-seed', 123, 'random number generator seed to use')
 cmd:option('-gpuid', 0, 'which gpu to use. -1 = use CPU')
 cmd:option('-camera_id','','use camera as input for images. Specify the ID of the camera. camera_id=0 for default camera')
+cmd:option('-display_img',0,'display image as it is processed with the caption as the title for the window(requires qt support)')
 cmd:text()
 
 -------------------------------------------------------------------------------
@@ -58,6 +58,7 @@ local opt = cmd:parse(arg)
 torch.manualSeed(opt.seed)
 torch.setdefaulttensortype('torch.FloatTensor') -- for CPU
 local w = nil
+if opt.display_img == 0 then opt.display_img = false else opt.display_img = true end
 
 if opt.gpuid >= 0 then
   require 'cutorch'
@@ -90,8 +91,13 @@ local function load_data(folder)
   print("Folder....",folder)
   if string.len(opt.image_folder) == 0 and string.len(opt.camera_id) == 0 then
     loader = DataLoader{h5_file = opt.input_h5, json_file = opt.input_json}
+    opt.camera_id='' --to remove infinite loop at the end if both image_folder and camera_id are set 
   elseif string.len(opt.camera_id) > 0 then
+    require 'camera'
+    require 'image'
     loader = CameraLoader{}
+    opt.display_img = true
+    print 'Using CameraLoader .. Press ctrl+c to terminate'
   else
     loader = DataLoaderRaw{folder_path = folder, coco_json = opt.coco_json}
   end
@@ -172,9 +178,12 @@ local function eval_split(split, evalopt)
       if verbose then
         print(string.format('image %s: %s', entry.image_id, entry.caption))
       end
-      local status,err = pcall(display_image,data.images[k],w,sents[k]) --error handling for absence of qt
-      if status then
-        w=err --use the same window
+
+      if opt.display_img then
+        local status,err = pcall(display_image,data.images[k],w,sents[k]) --error handling for absence of qt
+        if status then
+          w=err --use the same window
+        end
       end
     end
 
@@ -184,7 +193,7 @@ local function eval_split(split, evalopt)
     if verbose then
       print(string.format('evaluating performance... %d/%d (%f)', ix0-1, ix1, loss))
     end
-    -- break
+
     if data.bounds.wrapped then break end -- the split ran out of data, lets break out
     if num_images >= 0 and n >= num_images then break end -- we've used enough images
   end
