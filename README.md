@@ -77,7 +77,7 @@ $ cd vis
 $ python -m SimpleHTTPServer
 ```
 
-Now visit `localhost:4000` in your browser and you should see your predicted captions.
+Now visit `localhost:8000` in your browser and you should see your predicted captions.
 
 You can see an [example visualization demo page here](http://cs.stanford.edu/people/karpathy/neuraltalk2/demo.html).
 
