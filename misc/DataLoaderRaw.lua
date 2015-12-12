@@ -7,6 +7,7 @@ Only used at test time.
 local utils = require 'misc.utils'
 require 'lfs'
 require 'image'
+local path = require 'pl.path'
 
 local DataLoaderRaw = torch.class('DataLoaderRaw')
 
