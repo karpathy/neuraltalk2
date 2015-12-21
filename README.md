@@ -94,7 +94,7 @@ You can see an [example visualization demo page here](http://cs.stanford.edu/peo
 Great, first we need to some preprocessing. Head over to the `coco/` folder and run the IPython notebook to download the dataset and do some very simple preprocessing. The notebook will combine the train/val data together and create a very simple and small json file that contains a large list of image paths, and raw captions for each image, of the form:
 
 ```
-[{ file_path: 'path/img.jpg', captions: ['a caption', ...] }, ...]
+[{ "file_path": "path/img.jpg", "captions": ["a caption", "a second caption of i"tgit ...] }, ...]
 ```
 
 Once we have this, we're ready to invoke the `prepro.py` script, which will read all of this in and create a dataset (an hdf5 file and a json file) ready for consumption in the Lua code. For example, for MS COCO we can run the prepro file as follows:
@@ -121,10 +121,10 @@ If you'd like to evaluate BLEU/METEOR/CIDEr scores during training in addition t
 
 ### I'd like to train on my own data
 
-No problem, create a json file in the exact same form as before:
+No problem, create a json file in the exact same form as before, describing your JPG files:
 
 ```
-[{ file_path: 'path/img.jpg', captions: ['a caption', ...] }, ...]
+[{ "file_path": "path/img.jpg", "captions": ["a caption", "a similar caption" ...] }, ...]
 ```
 
 and invoke the `prepro.py` script to preprocess all the images and data into and hdf5 file and json file. Then invoke `train.lua` (see detailed options inside code).
