@@ -1,5 +1,5 @@
 --[[
-Same as DataLoader but only requires a folder of images. 
+Same as DataLoader but only requires a folder of images.
 Does not have an h5 dependency.
 Only used at test time.
 ]]--
@@ -15,7 +15,7 @@ function DataLoaderRaw:__init(opt)
 
   -- load the json file which contains additional information about the dataset
   print('DataLoaderRaw loading images from folder: ', opt.folder_path)
-    
+
   self.files = {}
   self.ids = {}
   if string.len(opt.coco_json) > 0 then
@@ -31,7 +31,7 @@ function DataLoaderRaw:__init(opt)
     -- read in all the filenames from the folder
     print('listing all images in directory ' .. opt.folder_path)
     local function isImage(f)
-      local supportedExt = {'.jpg','.JPEG','.JPG','.png','.PNG','.ppm','.PPM'}
+      local supportedExt = {'.jpg','.JPG','.jpeg','.JPEG','.png','.PNG','.ppm','.PPM'}
       for _,ext in pairs(supportedExt) do
         local _, end_idx =  f:find(ext)
         if end_idx and end_idx == f:len() then
@@ -95,4 +95,3 @@ function DataLoaderRaw:getBatch(opt)
   data.infos = infos
   return data
 end
-
