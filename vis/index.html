@@ -1,65 +1,73 @@
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>neuraltalk2 results visualization</title>
     <script src="jquery-1.8.3.min.js"></script>
-    <script src="d3.min.js" charset="utf-8"></script>
     <style>
     body {
-      color: #333;
+      background: #000;
       margin: 0;
-      padding: 0;
       font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
-      font-weight: 300;
-    }
-    #wrap {
-      margin: 10px;
+      font-weight: 200;
     }
     .result {
-      width:300px;
-      margin:10px;
+      background: no-repeat center/contain #141414;
+      color: #fff;
+      height: 18vw;
+      position: relative;
+      width: 32vw;
       display: inline-block;
-      vertical-align: top;
     }
-    .result img {
+    .result:nth-child(2n+1) {
+      background-color: #181818;
+    }
+    .result p {
+      background: rgba(0, 0, 0, .5);
+      bottom: 0;
+      box-sizing: border-box;
+      left: 0;
+      margin: 0;
+      padding: 5px;
+      position: absolute;
+      text-shadow: 0 1px 1px #000;
       width: 100%;
     }
+    #results {
+      margin: 1.5vw auto;
+      width: 96vw;
+    }
     </style>
-    
-    <script type="application/javascript">
-
-    // Data Loading util
-    var vars;
-    function loadData() {
-      var jsonpath = 'vis.json';
-      var jsonmod = jsonpath + '?sigh=' + Math.floor(Math.random() * 100000); // ughly hack to prevent caching
-      $.getJSON(jsonpath, function(x) {
-        data = x // store in global
-        render();
-      });
-    }
-
-    // "int main" function here
-    function start() {
-      loadData();
-    }
-
-    function render() {
-      $("#wrap").html(''); // reset
-      for(var i=0;i<data.length;i++) {
-        var div = d3.select("#wrap").append("div").classed('result', true);
-        div.append('img').attr('src', 'imgs/img' + (i+1) + '.jpg');
-        div.append('div').html(data[i].caption)
+  </head>
+  <body>
+    <div id="results"></div>
+    <script>
+    function loadVisible() {
+      var top = $(document).scrollTop(), bottom = top + $(window).height();
+      var results = $('#results > div')
+      for (var i = 0; i < results.length; i++) {
+        var div = results.eq(i);
+        var y1 = div.position().top, y2 = y1 + div.height();
+        if (y1 > bottom || y2 < top) {
+          div.css('background-image', '');
+          continue;
+        }
+        div.css('background-image', 'url(' + div.data('image') + ')');
       }
     }
-
-</script>
-  </head>
-  <body onload="start()">
-    <div id="wrap">
-    </div>
+    $(window).scroll(loadVisible);
+    $.getJSON('vis.json?t=' + +new Date, function (data) {
+      $('#results').html('');
+      for (var i = 0; i < data.length; i++) {
+        var path = 'imgs/img' + (i + 1) + '.jpg';
+        $('<div class="result">')
+          .data('image', path)
+          .append($('<p>').text(data[i].caption))
+          .appendTo('#results');
+      }
+      loadVisible();
+    });
+    </script>
   </body>
 </html>

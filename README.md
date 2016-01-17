@@ -83,9 +83,11 @@ $ cd vis
 $ python -m SimpleHTTPServer
 ```
 
-Now visit `localhost:4000` in your browser and you should see your predicted captions.
+Now visit `localhost:8000` in your browser and you should see your predicted captions.
 
 You can see an [example visualization demo page here](http://cs.stanford.edu/people/karpathy/neuraltalk2/demo.html).
+
+**Running in Docker**. If you'd like to avoid dependency nightmares, running the codebase from Docker might be a good option. There is one (third-party) [docker repo here](https://github.com/beeva-enriqueotero/docker-neuraltalk2).
 
 **"I only have CPU"**. Okay, in that case download the [cpu model checkpoint](http://cs.stanford.edu/people/karpathy/neuraltalk2/checkpoint_v1_cpu.zip). Make sure you run the eval script with `-gpuid -1` to tell the script to run on CPU. On my machine it takes a bit less than 1 second per image to caption in CPU mode.
 
@@ -95,12 +97,14 @@ You can see an [example visualization demo page here](http://cs.stanford.edu/peo
 
 **Running on MSCOCO images**. If you train on MSCOCO (see how below), you will have generated preprocessed MSCOCO images, which you can use directly in the eval script. In this case simply leave out the `image_folder` option and the eval script and instead pass in the `input_h5`, `input_json` to your preprocessed files. This will make more sense once you read the section below :)
 
+**Running a live demo**. With OpenCV 3 installed you can caption video stream from camera in real time. Follow the instructions in [torch-opencv](https://github.com/VisionLabs/torch-opencv/wiki/installation) to install it and run `videocaptioning.lua` similar to `eval.lua`. Note that only central crop will be captioned.
+
 ### I'd like to train my own network on MS COCO
 
 Great, first we need to some preprocessing. Head over to the `coco/` folder and run the IPython notebook to download the dataset and do some very simple preprocessing. The notebook will combine the train/val data together and create a very simple and small json file that contains a large list of image paths, and raw captions for each image, of the form:
 
 ```
-[{ file_path: 'path/img.jpg', captions: ['a caption', ...] }, ...]
+[{ "file_path": "path/img.jpg", "captions": ["a caption", "a second caption of i"tgit ...] }, ...]
 ```
 
 Once we have this, we're ready to invoke the `prepro.py` script, which will read all of this in and create a dataset (an hdf5 file and a json file) ready for consumption in the Lua code. For example, for MS COCO we can run the prepro file as follows:
@@ -127,10 +131,10 @@ If you'd like to evaluate BLEU/METEOR/CIDEr scores during training in addition t
 
 ### I'd like to train on my own data
 
-No problem, create a json file in the exact same form as before:
+No problem, create a json file in the exact same form as before, describing your JPG files:
 
 ```
-[{ file_path: 'path/img.jpg', captions: ['a caption', ...] }, ...]
+[{ "file_path": "path/img.jpg", "captions": ["a caption", "a similar caption" ...] }, ...]
 ```
 
 and invoke the `prepro.py` script to preprocess all the images and data into and hdf5 file and json file. Then invoke `train.lua` (see detailed options inside code).
