@@ -20,7 +20,7 @@ require 'cv.imgproc'
 -------------------------------------------------------------------------------
 cmd = torch.CmdLine()
 cmd:text()
-cmd:text('Train an Image Captioning model')
+cmd:text('Video Captioning using a trained image captioning model')
 cmd:text()
 cmd:text('Options')
 
@@ -42,6 +42,9 @@ cmd:option('-backend', 'cudnn', 'nn|cudnn')
 cmd:option('-id', 'evalscript', 'an id identifying this run/job. used only if language_eval = 1 for appending to intermediate files')
 cmd:option('-seed', 123, 'random number generator seed to use')
 cmd:option('-gpuid', 0, 'which gpu to use. -1 = use CPU')
+-- video options
+cmd:option('-video_src', 0, 'Load source video from (0=camera or 1=file)')
+cmd:option('-video_path', '', 'if video_src = 1, define the path to video file')
 cmd:text()
 
 -------------------------------------------------------------------------------
@@ -60,12 +63,37 @@ if opt.gpuid >= 0 then
 end
 
 cv.namedWindow{winname="NeuralTalk2", flags=cv.WINDOW_AUTOSIZE}
-local cap = cv.VideoCapture{device=0}
-if not cap:isOpened() then
-  print("Failed to open the default camera")
-  os.exit(-1)
-end
-local _, frame = cap:read{}
+
+-------------------------------------------------------------------------------
+-- Setup video source
+-------------------------------------------------------------------------------
+local function video_src_setup(options)
+  local cap
+  if options.video_src == 0 then
+    cap = cv.VideoCapture{device=0}
+    if not cap:isOpened() then
+      print("Failed to open the default camera")
+      os.exit(-1)
+    end
+  elseif options.video_src == 1 then
+    if options.video_path == '' then
+      print("Path to video file not defined")
+      os.exit(-1)
+    end
+    cap = cv.VideoCapture{options.video_path}
+    if not cap:isOpened() then
+      print("Failed to open video file")
+      os.exit(-1)
+    end
+  else
+    print("Unknown video source option")
+    os.exit(-1)
+  end
+  return cap
+end 
+
+local cap = video_src_setup(opt)
+local ret, frame = cap:read{}
 
 -------------------------------------------------------------------------------
 -- Load the model checkpoint to evaluate
@@ -92,7 +120,7 @@ if opt.gpuid >= 0 then for k,v in pairs(protos) do v:cuda() end end
 -- Evaluation fun(ction)
 -------------------------------------------------------------------------------
 
-local function run()
+local function run(ret)
   protos.cnn:evaluate()
   protos.lm:evaluate()
 
@@ -135,8 +163,8 @@ local function run()
     cv.imshow{winname="NeuralTalk2", image=crop}
     if cv.waitKey{30} >= 0 then break end
 
-    cap:read{image=frame}
+    ret, frame = cap:read{}
   end
 end
 
-run()
+run(ret)
