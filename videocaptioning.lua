@@ -124,7 +124,7 @@ local function run(ret)
   protos.cnn:evaluate()
   protos.lm:evaluate()
 
-  while true do
+  while ret do
     local w = frame:size(2)
     local h = frame:size(1)
 
@@ -165,6 +165,8 @@ local function run(ret)
 
     ret, frame = cap:read{}
   end
+  cap:release{}
+  cv.destroyAllWindows{}
 end
 
 run(ret)
