@@ -165,8 +165,8 @@ local function run(ret)
 
     ret, frame = cap:read{}
   end
-  cap:release{}
-  cv.destroyAllWindows{}
 end
 
 run(ret)
+cap:release{}
+cv.destroyAllWindows{}
