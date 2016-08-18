@@ -147,13 +147,14 @@ assert(cnn_params:nElement() == cnn_grad_params:nElement())
 -- for checkpointing to write significantly smaller checkpoint files
 local thin_lm = protos.lm:clone()
 for k,v in pairs(thin_lm) do
-  if type(v) == 'table' and v.share then v:share(protos.lm[k],'weights','bias') end
+  if type(v) == 'table' and v.share then
+    v:share(protos.lm[k],'weights','bias')
+    net_utils.sanitize_gradients(v)
+  end
 end
 local thin_cnn = protos.cnn:clone('weight', 'bias')
 -- sanitize all modules of gradient storage so that we dont save big checkpoints
 net_utils.sanitize_gradients(thin_cnn)
-local lm_modules = thin_lm:getModulesList()
-for k,v in pairs(lm_modules) do net_utils.sanitize_gradients(v) end
 
 -- create clones and ensure parameter sharing. we have to do this
 -- all the way here at the end because calls such as :cuda() and
