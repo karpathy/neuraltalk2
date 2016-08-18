@@ -146,8 +146,9 @@ assert(cnn_params:nElement() == cnn_grad_params:nElement())
 -- modules. These thin module will have no intermediates and will be used
 -- for checkpointing to write significantly smaller checkpoint files
 local thin_lm = protos.lm:clone()
-thin_lm.core:share(protos.lm.core, 'weight', 'bias') -- TODO: we are assuming that LM has specific members! figure out clean way to get rid of, not modular.
-thin_lm.lookup_table:share(protos.lm.lookup_table, 'weight', 'bias')
+for k,v in pairs(thin_lm) do
+  if type(v) == 'table' and v.share then v:share(protos.lm[k],'weights','bias') end
+end
 local thin_cnn = protos.cnn:clone('weight', 'bias')
 -- sanitize all modules of gradient storage so that we dont save big checkpoints
 net_utils.sanitize_gradients(thin_cnn)
