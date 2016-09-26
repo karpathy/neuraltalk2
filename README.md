@@ -40,7 +40,14 @@ $ luarocks install image
 
 We're also going to need the [cjson](http://www.kyne.com.au/~mark/software/lua-cjson-manual.html) library so that we can load/save json files. Follow their [download link](http://www.kyne.com.au/~mark/software/lua-cjson.php) and then look under their section 2.4 for easy luarocks install.
 
-If you'd like to run on an NVIDIA GPU using CUDA (which you really, really want to if you're training a model, since we're using a VGGNet), you'll of course need a GPU, and you will have to install the [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit). Then get the `cutorch` and `cunn` packages:
+If you'd like to run on an NVIDIA GPU using CUDA (which you really, really want to if you're training a model, since we're using a VGGNet), you'll of course need a GPU, and you will have to install the [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit). Before installing CUDA on Ubuntu, you need to uncomment the source repository on /etc/apt/sources.list and then download the kernel source:
+
+```bash
+apt-get update
+apt-get source linux-image-$(uname -r)
+```
+
+Then get the `cutorch` and `cunn` packages:
 
 ```bash
 $ luarocks install cutorch
