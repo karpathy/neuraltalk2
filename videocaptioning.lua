@@ -54,6 +54,7 @@ torch.setdefaulttensortype('torch.FloatTensor') -- for CPU
 if opt.gpuid >= 0 then
   require 'cutorch'
   require 'cunn'
+  require 'cv.cudawarping'
   if opt.backend == 'cudnn' then require 'cudnn' end
   cutorch.manualSeed(opt.seed)
   cutorch.setDevice(opt.gpuid + 1) -- note +1 because lua is 1-indexed
@@ -102,7 +103,12 @@ local function run()
 
     -- take a central crop
     local crop = cv.getRectSubPix{image=frame, patchSize={h,h}, center={w/2, h/2}}
-    local cropsc = cv.resize{src=crop, dsize={256,256}}
+    local cropsc
+    if opt.gpuid >= 0 then
+        cropsc = cv.cuda.resize{src=crop:cuda(), dsize={256,256}}
+    else
+        cropsc = cv.resize{src=crop, dsize={256,256}}
+    end
     -- BGR2RGB
     cropsc = cropsc:index(3,torch.LongTensor{3,2,1})
     -- HWC2CHW
