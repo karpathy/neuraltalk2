@@ -20,7 +20,15 @@ There's also a [fun video](https://vimeo.com/146492001) by [@kcimc](https://twit
 
 #### For evaluation only
 
-This code is written in Lua and requires [Torch](http://torch.ch/). If you're on Ubuntu, installing Torch in your home directory may look something like: 
+This code is written in Lua and requires [Torch](http://torch.ch/).
+
+If you're on Ubuntu, first install Torch build dependencies:
+
+```bash
+$ sudo apt-get install git cmake libreadline-dev
+```
+
+Then installing Torch in your home directory may look something like: 
 
 ```bash
 $ curl -s https://raw.githubusercontent.com/torch/ezinstall/master/install-deps | bash
