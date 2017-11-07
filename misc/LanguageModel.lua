@@ -248,18 +248,29 @@ function layer:sample_beam(imgs, opt)
           if v.c == self.vocab_size+1 or t == self.seq_length+2 then
             -- END token special case here, or we reached the end.
             -- add the beam to a set of done beams
-            table.insert(done_beams, {seq = beam_seq[{ {}, vix }]:clone(), 
+            --[[table.insert(done_beams, {seq = beam_seq[{ {}, vix }]:clone(), 
                                       logps = beam_seq_logprobs[{ {}, vix }]:clone(),
                                       p = beam_logprobs_sum[vix]
+                                     })]]--
+                                     
+             --To remedy the bias towards short sentences during inference by length normalization.
+             
+             table.insert(done_beams, {seq = beam_seq[{ {}, vix }]:clone(), 
+                                      logps = beam_seq_logprobs[{ {}, vix }]:clone(),
+                                      p = beam_logprobs_sum[vix]/t
                                      })
-          end
+             --The search alone one beam stops once it encounters an END token
+             beam_logprobs_sum[vix]=-math.huge
+             
+             
         end
         
         -- encode as vectors
         it = beam_seq[t-2]
         xt = self.lookup_table:forward(it)
       end
-
+      --Breaking the loop once encountering beam_size END tokens simultaneously.
+      if it==torch.ones(1,beam_size)*(self.vocab_size+1) then break end
       if new_state then state = new_state end -- swap rnn state, if we reassinged beams
 
       local inputs = {xt,unpack(state)}
